@@ -1,24 +1,101 @@
-import "./style.css";
-import viteLogo from "/vite.svg";
-import { setupCounter } from "./counter.ts";
-import typescriptLogo from "./typescript.svg";
+type Size = [number, number];
 
-document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`;
+const ROOT = document.documentElement;
+const DEFAULT_CONFIG = {
+	canvasId: "sozore-canvas",
+	cssVarPrefix: "sozore",
+	validMinAlpha: 255,
+	resize: [480, 480] as Size,
+	grayScales: {
+		["main" as string]: 50,
+		["sub" as string]: 80,
+		["accent" as string]: 100,
+		["accent2" as string]: 200,
+	},
+};
 
-setupCounter(document.querySelector<HTMLButtonElement>("#counter")!);
+type Config = Partial<typeof DEFAULT_CONFIG>;
+
+const generateCanvas = (id: string, size: Size) => {
+	const canvas = document.createElement("canvas");
+	canvas.id = id;
+	canvas.width = size[0];
+	canvas.height = size[1];
+	return canvas;
+};
+
+const drawImageToCanvas = (
+	canvas: HTMLCanvasElement,
+	img: HTMLImageElement,
+	drawSize: Size = [canvas.width, canvas.height],
+) => {
+	const ctx = canvas.getContext("2d");
+	if (!ctx) throw new Error("Cannot get 2d context");
+	ctx.drawImage(img, 0, 0, drawSize[0], drawSize[1]);
+	return ctx;
+};
+
+type RgbaString = `${number},${number},${number},${number}`;
+const countRgbaMap = (
+	ctx: CanvasRenderingContext2D,
+	validMinAlpha: number,
+): Map<RgbaString, number> => {
+	const minAlpha = Math.min(255, Math.max(0, validMinAlpha));
+	const imgData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+	const data = imgData.data;
+	const colorCountMap = new Map<RgbaString, number>();
+	data.forEach((_, i) => {
+		if (i % 4 !== 0) return;
+		if (data[i + 3] < minAlpha) return;
+		const rgba = [data[i], data[i + 1], data[i + 2], data[i + 3]];
+		const key = rgba.join(",") as RgbaString;
+		if (colorCountMap.has(key)) {
+			const colorCount = colorCountMap.get(key);
+			if (colorCount === undefined) throw new Error("Invalid colorCount");
+			colorCountMap.set(key, colorCount + 1);
+		} else {
+			colorCountMap.set(key, 1);
+		}
+	});
+	return colorCountMap;
+};
+
+const calcAspectRatio = ([width, height]: Size): number => {
+	if (height === 0) throw new Error("Cannot divide by zero");
+	return width / height;
+};
+
+const resize = ([oWidth, oHeight]: Size, [rWidth, rHeight]: Size): Size => {
+	const oAspectRatio = calcAspectRatio([oWidth, oHeight]);
+	const rAspectRatio = calcAspectRatio([rWidth, rHeight]);
+	if (oAspectRatio === rAspectRatio) return [rWidth, rHeight];
+	if (oAspectRatio > rAspectRatio) return [rWidth, rWidth / oAspectRatio];
+	return [rHeight * oAspectRatio, rHeight];
+};
+
+const setCssVars = (keys: string[], colors: string[], varPrefix?: string) => {
+	const prefix = varPrefix || DEFAULT_CONFIG.cssVarPrefix;
+	keys.forEach((key, i) => {
+		ROOT.style.setProperty(`--${prefix}-${key}`, `rgba(${colors[i]})`);
+	});
+};
+
+export const sozore = (img: HTMLImageElement, config?: Config) => {
+	const sozoreConfig = { ...DEFAULT_CONFIG, ...config };
+	const [rWidth, rHeight] = sozoreConfig.resize;
+	const [width, height] = resize([img.width, img.height], [rWidth, rHeight]);
+	const intWidth = Math.floor(width);
+	const intHeight = Math.floor(height);
+	const canvas = generateCanvas(sozoreConfig.canvasId, [intWidth, intHeight]);
+	const ctx = drawImageToCanvas(canvas, img, [intWidth, intHeight]);
+	const rgbaList = Array.from(
+		countRgbaMap(ctx, sozoreConfig.validMinAlpha).entries(),
+	);
+	const descRgbaList = rgbaList.sort((a, b) => b[1] - a[1]);
+	const colorNames = Object.keys(sozoreConfig.grayScales);
+	const rgbaStrings = descRgbaList
+		.slice(0, colorNames.length)
+		.map(([rgba]) => rgba);
+	setCssVars(colorNames, rgbaStrings);
+	console.table(descRgbaList.slice(0, 10));
+};
