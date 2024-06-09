@@ -1,0 +1,24 @@
+.sample {
+  display: grid;
+  grid-template: "img title" 1fr
+                 "img text" 2fr
+                 "img text" 2fr / 1fr 2fr;
+  gap: 12px 24px;
+  background: var(--sozore-main);
+  
+  img {
+    grid-area: img;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+  }
+  
+  h2 {
+    grid-area: title;
+    color: var(--sozore-sub);
+  }
+  
+  p {
+    grid-area: text;
+    color: var(--sozore-accent);
+  }
+}
