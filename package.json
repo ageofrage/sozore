@@ -4,9 +4,9 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
-		"build": "tsc && vite build",
-		"preview": "vite preview",
+		"dev": "vite demo --open --port 3000",
+		"build": "tsc && vite build src",
+		"preview": "vite demo --open --port 3000 preview",
 		"check": "biome check --apply src"
 	},
 	"devDependencies": {
