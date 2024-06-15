@@ -1,20 +1,6 @@
-type Size = [number, number];
+import { type Config, DEFAULT_CONFIG, type Size } from "./model.ts";
 
 const ROOT = document.documentElement;
-const DEFAULT_CONFIG = {
-	canvasId: "sozore-canvas",
-	cssVarPrefix: "sozore",
-	validMinAlpha: 255,
-	resize: [480, 480] as Size,
-	grayScales: {
-		["main" as string]: 50,
-		["sub" as string]: 80,
-		["accent" as string]: 100,
-		["accent2" as string]: 200,
-	},
-};
-
-type Config = Partial<typeof DEFAULT_CONFIG>;
 
 const generateCanvas = (id: string, size: Size) => {
 	const canvas = document.createElement("canvas");
