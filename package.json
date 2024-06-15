@@ -1,24 +1,27 @@
 {
-	"name": "sozore",
-	"private": true,
-	"version": "0.0.0",
-	"type": "module",
+  "name": "sozore",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "main": "./dist/sozore.es.js",
   "exports": {
     "import": "./dist/sozore.es.js",
     "require": "./dist/sozore.cjs.js"
   },
-	"scripts": {
-		"dev": "vite demo --open --port 3000",
-		"typecheck": "tsc --noEmit",
-		"build": "tsc && vite build",
-		"preview": "vite demo --open --port 3000 preview",
-		"check": "biome check --apply src"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "1.7.3",
-		"@tsconfig/recommended": "^1.0.6",
-		"typescript": "^5.2.2",
-		"vite": "^5.2.0"
-	}
+  "scripts": {
+    "dev": "vite demo --open --port 3000",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc && vite build",
+    "preview": "vite demo --open --port 3000 preview",
+    "check": "biome check --apply src",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.7.3",
+    "@tsconfig/recommended": "^1.0.6",
+    "@types/node": "^20.14.2",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vitest": "^1.6.0"
+  }
 }

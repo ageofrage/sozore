@@ -15,4 +15,7 @@ export default defineConfig({
       exports: 'named',
     }
   },
+  test: {
+    globals: true,
+  }
 })
